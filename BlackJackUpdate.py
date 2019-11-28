@@ -49,19 +49,23 @@ for suit in suits:
     for card in cardval:
         deck.append((card,suit))
 
-def playturn(hand,action,bet, money):
+def playturn(hand,action,bet=0, money=0):
     if action == 'Hit':
         deal(hand, 1)
-        return (('Hand:',hand),
-               ('Score:',score(hand)),
-               ('Bet',bet),
-               ('Chips:',money))
+        print('Hand:',hand),
+        print('Score:',score(hand)),
+        print('Bet',bet),
+        print('Chips:',money)
+        if score(hand) > 21:
+            print('Bust! Dealers turn')
+            turn='Dealer'
+            
     elif action == 'Stand':
         turn='Dealer'
-        return (('Hand:',hand),
-               ('Score:',score(hand)),
-               ('Bet',bet),
-               ('Chips:',money))
+        print('Hand:',hand)
+        print('Score:',score(hand))
+        print('Bet',bet, 'Chips:',money)
+        
     elif action == 'DD':
         if bet > money:
             print('Error: insufficient funds to double down, please choose another option')
@@ -70,10 +74,11 @@ def playturn(hand,action,bet, money):
             bet += bet
             deal(hand,1)
             turn='Dealer'
-            return (('Hand:',hand),
-                   ('Score:',score(hand)),
-                   ('Bet',bet),
-                   ('Chips:',money)),
+            print('Hand:',hand)
+            print('Score:',score(hand))
+            print('Bet',bet)
+            print('Chips:',money)
+            
     elif action == 'Split':
         if bet > money:
             print('Error: insufficient funds to split, please choose another option')
@@ -93,38 +98,44 @@ def playturn(hand,action,bet, money):
             print('Hand 2:', hand2)
             while turn == 'hand1':
                 action=input('What would you like to do with Hand 1? (Hit, Stand, DD?')
-                playturn(hand1,action,bet,money)
-                if action == 'Stand':
-                    turn='hand2'
-                elif score(hand1) > 21:
-                    print('Bust! now play for hand 2')
-                    turn='hand2'
+                if action == 'Split':
+                    print('Error: can only split once, please choose another option')
+                else:
+                    playturn(hand1,action,bet,money)
+                    if action == 'Stand':
+                        turn='hand2'
+                    elif score(hand1) > 21:
+                        print('Bust! now play for hand 2')
+                        turn='hand2'
             while turn == 'hand2':
                 action=input('What would you like to do with Hand 2? (Hit, Stand, DD?')
                 playturn(hand2,action)
             turn='Dealer'
-            return (('Hand 1:',hand1),
-                   ('Score 1:',score(hand1)),
-                   ('Hand 2:',hand2),
-                   ('Score 2:',score(hand2)),
-                   ('Bet',bet),
-                   ('Chips:',money)),
+            print('Hand 1:',hand1)
+            print('Score 1:',score(hand1))
+            print('Hand 2:',hand2)
+            print('Score 2:',score(hand2))
+            print('Bet',bet)
+            print('Chips:',money)
+    
 
 def SaveGame(file,money):
     f=open(file,'w+')
-    f.write(str(moneu))
+    f.write(str(money))
     f.close()
+def OpenGame(file):
+    f=open(file, 'r')
+    money=f.readlines()
+    f.close()
+    return int(money[0])
 
 playerhand=[]
 dealerhand=[]
 deal(playerhand,2)
 deal(dealerhand,2)
-
-
-
-
-
-
+turn=0
+if score(dealerhand) < 17:
+    playturn(dealerhand,'Hit')
 
     
  

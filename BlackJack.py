@@ -4,6 +4,7 @@
 
 import random
 from time import sleep
+
 #initializing values for cards
 cardval = {
 'A': 11,
@@ -22,19 +23,18 @@ cardval = {
 suits=['Spades', 'Hearts', 'Clubs', 'Diamonds']
 
 def table1(playerhand,dealerhand,bet,money):
-    print('Your Hand:',playerhand)
-    print('Your Score:', score(playerhand))
-    print('Bet:', bet, 'Chips:', money)
-    print('Dealer Hand:', dealerhand[0],'?')
+    print('Dealer Hand:',dealerhand[0], '?'), sleep(1)
+    print('Player Hand:',playerhand), sleep(1)
+    print('Player Score:',score(playerhand)), sleep(1)
+    print('Bet:', bet), sleep(1)
+    print('Chips:', money), sleep(1)
 def table2(playerhand,dealerhand,bet,money):
-    print('Your Hand:',playerhand)
-    print('Your Score:', score(playerhand))
-    print('Bet:', bet, 'Chips:', money)
-    print('Dealer Hand:', dealerhand)
-    print('Dealer Score:', score(dealerhand))
-
-
-
+    print('Dealer Hand:',dealerhand), sleep(1)
+    print('Dealer Score:', score(dealerhand)), sleep(1)
+    print('Player Hand:',playerhand), sleep(1)
+    print('Player Score:',score(playerhand)), sleep(1)
+    print('Bet:', bet), sleep(1)
+    print('Chips:', money), sleep(1)
                                             
 def score(hand):
     '''
@@ -61,187 +61,250 @@ def deal(hand, a):
         deck.pop(cards)
     return hand
 
-deck=[]
+deck=[] #init deck
 for suit in suits:
     for card in cardval:
         deck.append((card,suit))
+decks=deck #init single deck, along with one that is played with, decks initialized after each hand
 
-def playturn(hand,action,turn,bet=0,money=0):
+def result(playerhand,dealerhand,bet,money):
+    table2(playerhand,dealerhand,bet,money), sleep(2)
+    while score(dealerhand) < 17:
+        dealerhand=deal(dealerhand,1)
+        table2(playerhand,dealerhand,bet,money), sleep(2)
+    if score(playerhand) > 21:
+        print('Bust! You lose')
+    elif score(playerhand) < score(dealerhand) and score(dealerhand) < 22:
+        print('Dealer Wins!')
+    elif score(dealerhand) > 21:
+        print('Dealer Bust! Hand Wins!')
+        money += bet*2
+    elif score(playerhand) > score(dealerhand):
+        print('Hand Wins!')
+        money += bet*2
+    elif score(playerhand) == score(dealerhand):
+        print('Push! Break Even.')
+        money += bet
+    print('Chips:', money)
+    return float(money)
+        
+
+
+
+def playturn(playerhand,dealerhand,action,bet,money):
+    table1(playerhand,dealerhand,bet,money)
     if action == 'Hit':
-        deal(hand, 1)
-        print('Hand:',hand),
-        print('Score:',score(hand)),
-        if bet != 0:
-            print('Bet',bet, 'Chips:',money),
-        if score(hand) > 21 and turn != 'Dealer':
-            print('Bust! Dealers turn')
-            turn='Dealer'
-        return hand, turn, bet, money
-            
+        playerhand=deal(playerhand,1)
+        if score(playerhand) > 21:
+            print('Bust!'), sleep(2)
+            return result(playerhand,dealerhand,bet,money)
+        elif score(playerhand) == 21:
+            return result(playerhand,dealerhand,bet,money)
+        else:
+            table1(playerhand,dealerhand,bet,money)
+            print('What would you like to do with your hand?')
+            action=input('ACTION> ')
+            return playturn(playerhand,dealerhand,action,bet,money)
+        
     elif action == 'Stand':
-        turn='Dealer'
-        print('Hand:',hand)
-        print('Score:',score(hand))
-        if bet != 0:
-            print('Bet',bet, 'Chips:',money)
-        return hand, turn, bet, money
-    
+        return result(playerhand,dealerhand,bet,money)
+
     elif action == 'DD':
         if bet > money:
-            print('Error: insufficient funds to double down, please choose another option')
+            print('Error, insufficient funds to Double down. Please choose another action.')
+            action=input('ACTION> ')
+            return playturn(playerhand,dealerhand,action,bet,money)
+        elif len(playerhand) > 2:
+            print('Error: cannot double down after hitting. Please choose another action')
+            action=input('ACTION> ')
+            return playturn(playerhand,dealerhand,action,bet,money)
         else:
             money -= bet
             bet += bet
-            deal(hand,1)
-            if score(hand) > 21:
-                print('Bust! Dealers turn')
-            turn='Dealer'
-            print('Hand:',hand)
-            print('Score:',score(hand))
-            if bet != 0:
-                print('Bet',bet, 'Chips:',money)
-        return hand, turn, bet, money
-            
-    elif action == 'Split':
-        if bet > money:
-            print('Error: insufficient funds to split, please choose another option')
-        elif cardval[hand[0][0]] != cardval[hand[1][0]]:
-            print('Error, cannot split different value cards, please choose another option')
-        else:
-            hand1=[]
-            hand2=[]
-            hand1.append(hand[0])
-            deal(hand1,1)
-            hand2.append(hand[1])
-            deal(hand2,1)
-            turn='hand1'
-            money = money - bet
-            bet += bet
-            print('Hand 1:', hand1)
-            print('Hand 2:', hand2)
-            while turn == 'hand1':
-                action=input('What would you like to do with Hand 1? (Hit, Stand, DD?')
-                if action == 'Split':
-                    print('Error: can only split once, please choose another option')
-                else:
-                    playturn(hand1,action,turn,bet,money)
-                    if action == 'Stand':
-                        turn='hand2'
-                    elif score(hand1) > 21:
-                        print('Bust! now play for hand 2')
-                        turn='hand2'
-            while turn == 'hand2':
-                action=input('What would you like to do with Hand 2? (Hit, Stand, DD?')
-                playturn(hand2,action,turn,bet,money)
-            turn='Dealer'
-            print('Hand 1:',hand1)
-            print('Score 1:',score(hand1))
-            print('Hand 2:',hand2)
-            print('Score 2:',score(hand2))
-            print('Bet',bet)
-            print('Chips:',money)
-            return hand1, hand2, turn, bet, money
+            playerhand=deal(playerhand,1)
+            return result(playerhand,dealerhand,bet,money)
+        
+    else:
+        print('Error: did not recognize input; please try again')
+        action=input('ACTION> ')
+        return playturn(playerhand,dealerhand,action,bet,money)
     
-
-def SaveGame(file,money):
+def SaveGame(file,money): #save progress function
     f=open(file,'w+')
     f.write(str(money))
     f.close()
-def OpenGame(file):
+def OpenGame(file): #open previous function
     f=open(file, 'r')
     money=f.readlines()
     f.close()
     return float(money[0])
 
-playerhand=[]
-dealerhand=[]
-deal(playerhand,2)
-deal(dealerhand,2)
-turn=0
 
-game = 'Y'
-while game == 'Y':
-    turn='Player'
-    print('Would you like to load an existing game(Y/N)?')
-    load=input('LOAD GAME?> ')
-    if load == 'Y':
-        print('Please enter the file path to where you saved your progress')
-        file=input('FILE LOCATION> ')
-        money=OpenGame(file)
-    else:
-        money=float(1000)
-    print('How much would you like to bet on this game?')
-    bet=float(input('BET> '))
-    money -= bet
+
+
+#begin game
+print('Would you like to open a previous game? (Y/N)?')
+opengame=input('Y/N> ')
+if opengame == 'Y':
+    print('Enter the file location from which you saved your previous game')
+    file=input('FILE> ')
+    money=float(OpenGame(file))
+else:
+    money=float(1000)
+
+
+
+turn=0
+while turn == 0:
+    print('--------------------------------------------------------------Shuffling Deck--------------------------------------------------------------')
+    deck=decks
     playerhand=[]
     dealerhand=[]
     deal(playerhand,2)
     deal(dealerhand,2)
-    table1(playerhand,dealerhand,bet,money)
+    x=0 #resets split fxn to determine money at end of turn
+    #playerhand=[('10', 'Diamonds'), ('10', 'Hearts')] Used to test split parts of function
+
+    print('Chips:',money)
+    print('How much would you like to bet on this hand?')
+    bet=float(input('BET> '))
+    while bet > money:
+        print('Error: insufficient funds to bet this big. Choose a more realistic number please')
+        bet=float(input('BET> '))
+    money -= bet
+    insurance='N'
     
-    if dealerhand[0][0] == 'A':
-        ins='need'
-        #checking for insurance
-        while  ins == 'need':
-            insurance=input("Would you like insurance? (Y/N)")
-            if insurance == 'Y':
-                insurancebet=input("How much would you like to place on insurance?")
-                money -= insurancebet
-                if insurancebet > money or insurancebet > bet*0.5:
-                    print("Error: too much money placed on insurance")
-                else:
-                    ins='done'
-            else:
-                ins='done'
-            if score(dealerhand) == 21:
-                print("Dealer has BlackJack!")
-                print(dealerhand)
-                turn='over'
-                if insurance == 'Y':
-                    money += insurancebet + insurancebet*2
+    table1(playerhand,dealerhand,bet,money)
+    if score(playerhand) == 21:
+        print('BlackJack! Pays 3:2'), sleep(2)
+        money += bet*2.5
+        turn=1
+        
     else:
-        ins='done'
-        print("Dealer Does NOT have BlackJack!")
-    hands=1
-    while turn == 'Player':
+        if dealerhand[0][0] == 'A':
+            ins = 'need'
+            while ins == 'need':
+                insurance=input('Would you like to buy insurance (Y/N)?> ')
+                if insurance == 'Y':
+                    insbet=float(input('How much would you like to place on insurance bet?'))
+                    if insbet > money or insbet > bet*0.5:
+                        print('Error: too much placed on insurance')
+                    else:
+                        ins='done'
+                        money -= insbet
+                elif insurance == 'N':
+                    ins='done'
+                else:
+                    print('Error: did not recognize input. Please try again')
+        if score(dealerhand) == 21:
+            print('Dealer has BlackJack! Game Over')
+            print(dealerhand)
+            turn = 1
+            if insurance == 'Y':
+                print('Insurance pays 2:1'), sleep(2)
+                money += insbet + insbet*2        
+        elif score(dealerhand) != 21 and (dealerhand[0][0] == 'A' or cardval[dealerhand[0][0]] == 10):
+            print('Dealer does NOT have BlackJack! Game On!'), sleep(1)
+            
+    while turn == 0:
         table1(playerhand,dealerhand,bet,money)
-        print('What would you like to do with your hand (Hit, Stand, DD (Double Down), Split?')
+        print('What would you like to do with your hand (Hit, Stand, DD (Double Down), Split)?')
         action=input('ACTION> ')
+        
         if action == 'Split':
-            hands=2
-        playturn(playerhand,action,turn,bet,money)
-    while turn == 'Dealer':
-        while score(dealerhand) < 17:
-            table2(playerhand,dealerhand,bet,money)
-            deal(dealerhand,1)
-        if score(dealerhand) > 17:
-            turn='Result'
-        if hands == 2:
-            if score(hand1) < 22 and score(hand1) > score(dealerhand):
-                print('Hand 1 Wins!')
+            if bet > money or cardval[playerhand[0][0]] != cardval[playerhand[1][0]]:
+                print('Error: cannot split, choose another action')
+                action=input('ACTION> ')
+                while action == 'Split':
+                    print('Error: cannot split, choose another action')
+                    action=input('ACTION> ')
+                playturn(playerhand,dealerhand,action,bet,money)
             else:
-                print('Hand 2 Loses!')
-                money += bet/2
-            if score(hand2) < 22 and score(hand2) > score(dealerhand):
-                print('Hand 2 Wins!')
+                x=1
+                money -= bet
+                hand1=[]
+                hand2=[]
+                hand1.append(playerhand[0])
+                hand2.append(playerhand[1])
+                deal(hand1,1)
+                deal(hand2,1)
+                print('Hand 1:', hand1)
+                print('Score Hand 1:', score(hand1))
+                print('Hand 2:', hand2)
+                print('Score Hand 2:', score(hand2))
+                print('What would you like to do with Hand 1 (DO NOT SPLIT OR DD, can only do these once per turn!)?')
+                action=input('ACTION> ')
+                while action == 'Split' or action == 'DD':
+                    print('Error: cannot make this selection; please try again.')
+                    print('What would you like to do with Hand 1? (DO NOT SPLIT OR DD, can only do these once per turn!)?')
+                    action=input('ACTION> ')
+                while action == 'Hit' and score(hand1) < 21:
+                    hand1=deal(hand1,1)
+                    print('Hand1:',hand1)
+                    print('Score Hand1',score(hand1))
+                    if score(hand1) < 21:
+                        print('What would you like to do with Hand 1(DO NOT SPLIT OR DD, can only do these once per turn!)?')
+                        action=input('ACTION> ')
+                print('Hand1:', hand1)
+                print('Score Hand1', score(hand1))
+                print('Hand2:', hand2)
+                print('Score Hand2:', score(hand2))
+                print('What would you like to do with Hand 2(DO NOT SPLIT OR DD, can only do these once per turn!)?')
+                action=input('ACTION> ')
+                while action == 'Split' or action == 'DD':
+                    print('Error: cannot make this selection; please try again.')
+                    print('What would you like to do with Hand 2? (DO NOT SPLIT OR DD, can only do these once per turn!)?')
+                    action=input('ACTION> ')
+                while action == 'Hit' and score(hand2) < 21:
+                    hand1=deal(hand2,1)
+                    print('Hand2:',hand2)
+                    print('Score Hand2',score(hand2))
+                    if score(hand2) < 21:
+                        print('What would you like to do with Hand 1(DO NOT SPLIT OR DD, can only do these once per turn!)?')
+                        action=input('ACTION> ')
+                result(hand1,dealerhand,bet,money), result(hand2,dealerhand,bet,money)
+            
+
+                        
+            
+        else:
+            playturn(playerhand,dealerhand,action,bet,money)
+        if action == 'DD':
+            money=result(playerhand,dealerhand,bet*2,money-bet)
+        elif x == 1:
+            money=result(hand1,dealerhand,bet,money)
+            money=result(hand2,dealerhand,bet,money)
+        else:
+            money=result(playerhand,dealerhand,bet,money)
+            
+        turn=1
+    while turn == 1:
+        print('Hand Over! Play Again (Y/N)?')
+        playagain=input('Y/N> ')
+        if playagain == 'Y' and money != 0:
+            turn=0
+        elif money <= 0 and playagain == 'Y':
+            print('Bankrupt; getting loan from bank......')
+            money += 1000
+            turn=0
+        else:
+            print('Would you like to save your progress (Y/N)?')
+            savegame=input('Y/N> ')
+            if savegame == 'Y' and money !=0:
+                print('Please input the file location for your progress to be saved')
+                file=input('FILE LOCATION> ')
+                SaveGame(file,money)
+                print('Thanks for Playing!')
+            elif savegame == 'Y' and money == 0:
+                print('Error, cannot save progress because you are bankrupt. Thanks for Playing!')
             else:
-                print('Hand 2 Loses!')
-                money += bet/2
-        if score(playerhand) > score(dealerhand) and score(playerhand) < 21:
-            print('You Win! Play again (Y/N)')
-            money += bet*2
-            game=input('NEW GAME> ')
-        elif score(playerhand) < 21 and score(dealerhand) > score(playerhand):
-            print('You Lose! Play again (Y/N)?')
-            game=input('NEW GAME> ')
-        if game == 'N':
-            print('Would You like to save your progress (Y/N)')
-            save=input('SAVE GAME> ')
-        if save == 'Y':
-            print('Please type a file location to save your progress')
-            file=input('FILE> ')
-            SaveGame(file,money)
+                print('Thanks for Playing')
                 
+            break
+            break
+            break
+            break
+
                 
 
 
@@ -256,4 +319,16 @@ while game == 'Y':
 
 
 
-  
+
+
+
+
+
+
+
+
+
+
+
+
+

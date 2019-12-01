@@ -5,6 +5,18 @@
 import random
 from time import sleep
 
+
+print("Welcome to Blackjack! Here are some rules you need to know:"), sleep(1)
+print("Player is dealt 2 cards face up, while the dealer has one card face up and one face down."), sleep(1)
+print("Player is playing against the Dealer, attempting to collect cards that get the Player's hand as close to 21, without going over."), sleep(1)
+print("Blackjack! is hit when the hand dealt to either the Player or Dealer is an Ace plus a 10 or face card."), sleep(1)
+print("If Player gets dealt Blackjack!, the player immediately Wins. The House pays out 3:2. If only the Dealer gets Blackack! the player immediately loses."), sleep(1)
+print("Players start with $1000, no table min or max bets."), sleep(1)
+print("Dealer must hit on 16 and stay on soft 17"), sleep(1)
+print("Insurance pays 2:1, max bet being 1/2 of original bet"), sleep(1)
+
+
+
 #initializing values for cards
 cardval = {
 'A': 11,
@@ -68,10 +80,10 @@ for suit in suits:
 decks=deck #init single deck, along with one that is played with, decks initialized after each hand
 
 def result(playerhand,dealerhand,bet,money):
-    table2(playerhand,dealerhand,bet,money), sleep(2)
+    table2(playerhand,dealerhand,bet,money)
     while score(dealerhand) < 17:
         dealerhand=deal(dealerhand,1)
-        table2(playerhand,dealerhand,bet,money), sleep(2)
+        table2(playerhand,dealerhand,bet,money)
     if score(playerhand) > 21:
         print('Bust! You lose')
     elif score(playerhand) < score(dealerhand) and score(dealerhand) < 22:

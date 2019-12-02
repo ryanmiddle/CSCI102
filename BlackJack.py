@@ -72,13 +72,13 @@ def deal(hand, a):
         hand.append(deck[cards])
         deck.pop(cards)
     return hand
-
+'''
 deck=[] #init deck
 for suit in suits:
     for card in cardval:
         deck.append((card,suit))
-decks=deck #init single deck, along with one that is played with, decks initialized after each hand
-
+decks=deck #init single deck, along with one that is played with, deck initialized after each hand
+'''
 def result(playerhand,dealerhand,bet,money):
     table2(playerhand,dealerhand,bet,money)
     while score(dealerhand) < 17:
@@ -169,14 +169,16 @@ else:
 turn=0
 while turn == 0:
     print('--------------------------------------------------------------Shuffling Deck--------------------------------------------------------------')
-    deck=decks
+    deck=[] #init deck
+    for suit in suits:
+        for card in cardval:
+            deck.append((card,suit))
+    
     playerhand=[]
     dealerhand=[]
     deal(playerhand,2)
     deal(dealerhand,2)
     x=0 #resets split fxn to determine money at end of turn
-    #playerhand=[('10', 'Diamonds'), ('10', 'Hearts')] Used to test split parts of function
-
     print('Chips:',money)
     print('How much would you like to bet on this hand?')
     bet=float(input('BET> '))
@@ -275,13 +277,10 @@ while turn == 0:
                         print('What would you like to do with Hand 1(DO NOT SPLIT OR DD, can only do these once per turn!)?')
                         action=input('ACTION> ')
                 result(hand1,dealerhand,bet,money), result(hand2,dealerhand,bet,money)
-            
-
-                        
-            
+             
         else:
             playturn(playerhand,dealerhand,action,bet,money)
-        if action == 'DD':
+        if action == 'DD' and bet <= money:
             money=result(playerhand,dealerhand,bet*2,money-bet)
         elif x == 1:
             money=result(hand1,dealerhand,bet,money)
